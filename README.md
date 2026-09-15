@@ -1,6 +1,6 @@
-Alexander  Genov - Axgenov
+Alexander Genov - Axgenov
 Bejanmin Hammy - Benhammy96
-Mena Ibeku - Menalbeku
+Mena Ibeku - MenaIbeku
 
 1. Communication will be done through IMessage, we have a dedicated groupchat and will meet on Facetime Calls or in person depending on team availability.
 2. M-F the team will meet after 4:00 PM for daily scrum calls and code reviews to go over work completed, and debugging.
