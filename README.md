@@ -23,7 +23,7 @@
 
 3. Right now, students waste time wandering between buildings or settling for crowded, noisy spots because there's no easy way to see what's actually free.
 
-4. The app solves this by aggregating space availability, through crowdsourced check-ins, occupancy sensors, or scheduling data, into a simple map or list students can filter by noise level, outlets, or group size.
+4. The app solves this by aggregating space availability, through crowdsourced check-ins, occupancy sensors, or scheduling data, into a simple map or list students can filter by group size or availability.
 
 5. Beyond the class, the same model could scale to any campus or shared workspace, cutting down on a small but real daily friction point for students trying to focus.
 
@@ -44,25 +44,74 @@ cd 326project
 
 #### 2. Install dependencies
 
-Make sure Node.js and npm are installed on your computer.
+Make sure Node.js 22.16 or newer and npm are installed on your computer.
 
 Install the project's dependencies:
 
 npm install
 
-#### 3. Start the application
+#### 3. Configure MongoDB
+
+Copy `.env.example` to `.env`:
+
+```sh
+cp .env.example .env
+```
+
+Set `MONGODB_URI` in `.env` to your MongoDB connection string. The example uses
+a local MongoDB instance at `127.0.0.1:27017` with database `study_space_finder`.
+Start MongoDB separately, or use a MongoDB Atlas connection string. Never commit
+`.env` or database credentials. `PORT` defaults to `3000`.
+
+The server connects to MongoDB before listening. If the connection fails, it exits
+with an error instead of accepting requests without storage.
+
+#### 4. Start the application
 
 Start the server using:
 
 npm start
 
-#### 4. Open the application
+#### 5. Open the application
 
 Once the server starts successfully, open a browser and navigate to:
 
 http://localhost:3000
 
 The Study Space Finder application should now be running locally.
+
+Database layer (Alex)
+
+- `config/database.js` mongoose connect
+- `models/Space.js`: spaces in the storage schema 
+- `repositories/spacesRepository.js`: reads and creates database records.
+
+fields: `name` (string), `location` (string), `capacity` (number),
+and `isAvailable` (boolean, default `true`). Name, location, and capacity are required by the storage schema. 
+MongoDB - `_id`; Mongoose - `createdAt` and `updatedAt`.
+
+Mena's section can use the repository directly:
+
+```js
+import * as spacesRepository from "../repositories/spacesRepository.js";
+
+const spaces = await spacesRepository.listSpaces();
+const space = await spacesRepository.createSpace({
+  name: "Library Room 201",
+  location: "Main Library, second floor",
+  capacity: 4,
+});
+```
+
+`listSpaces()` resolves array of plain objects, newest first (or `[]`).
+`createSpace(data)` resolves saved plain object, including its `_id` and timestamps.
+
+Both reject in the case of database errors
+listed space fields and does not handle HTTP, business rules, or result envelopes.
+The existing HTTP routes still return placeholder text until the controller and
+service are connected.
+
+Run `npm test` for schema checks.
 
 ### Development Workflow
 
