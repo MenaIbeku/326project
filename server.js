@@ -9,7 +9,7 @@ app.get("/", (req, res) => {
   res.send("Campus Study Space Finder");
 });
 
-app.get("/study-spaces", (req, res) => {
+app.get("/spaces", (req, res) => {
   res.send("Available Study Spaces on Campus");
 });
 
