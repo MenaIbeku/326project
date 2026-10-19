@@ -23,9 +23,45 @@
 
 3. Right now, students waste time wandering between buildings or settling for crowded, noisy spots because there's no easy way to see what's actually free.
 
-4. The app solves this by aggregating space availability, through crowdsourced check-ins, occupancy sensors, or scheduling data, into a simple map or list students can filter by group size or availability.
+4. The app solves this by letting students submit and view study spaces with details like location, noise level, and whether the space is good for groups.
 
 5. Beyond the class, the same model could scale to any campus or shared workspace, cutting down on a small but real daily friction point for students trying to focus.
+
+## Study Space Feature
+
+Users can add a study space from the `/spaces` page.
+
+The form collects:
+- name
+- location
+- noise level
+- whether the space is group friendly
+
+When the form is submitted, the browser sends a POST request to `/spaces`. The service validates the input, the repository saves the space to MongoDB, and the page reloads to show the saved study space.
+
+## System Diagram
+
+Browser Form
+    ↓
+POST /spaces
+    ↓
+Route
+    ↓
+Controller
+    ↓
+Service
+    ↓
+Repository
+    ↓
+MongoDB
+
+## Design Decisions
+
+**Benjamin Hamilton:** I kept the validation in the service layer instead of putting it in spacesController.js. We could’ve validated everything in the controller, but that would’ve mixed the request handling with the actual app rules. Keeping it in the service makes the controller cleaner and the validation easier to reuse.
+
+**Mena Ibeku:** ...
+
+**Alexander Genov:** ...
 
 
 ### Getting Started
