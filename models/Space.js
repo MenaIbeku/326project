@@ -5,8 +5,10 @@ const spaceSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     location: { type: String, required: true },
-    capacity: { type: Number, required: true },
+    noiseLevel: { type: String, required: true },
+    groupFriendly: { type: Boolean, default: false },
     isAvailable: { type: Boolean, default: true },
+    capacity: {type: Number, required: true}
   },
   { timestamps: true, bufferCommands: false },
 );

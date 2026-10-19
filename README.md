@@ -86,8 +86,9 @@ Database layer (Alex)
 - `models/Space.js`: spaces in the storage schema 
 - `repositories/spacesRepository.js`: reads and creates database records.
 
-fields: `name` (string), `location` (string), `capacity` (number),
-and `isAvailable` (boolean, default `true`). Name, location, and capacity are required by the storage schema. 
+fields: `name` (string), `location` (string), `noiseLevel` (string),
+`groupFriendly` (boolean, default `false`), and `isAvailable` (boolean, default `true`).
+Name, location, and noiseLevel are required by the storage schema.
 MongoDB - `_id`; Mongoose - `createdAt` and `updatedAt`.
 
 Mena's section can use the repository directly:
@@ -99,7 +100,8 @@ const spaces = await spacesRepository.listSpaces();
 const space = await spacesRepository.createSpace({
   name: "Library Room 201",
   location: "Main Library, second floor",
-  capacity: 4,
+  noiseLevel: "quiet",
+  groupFriendly: true,
 });
 ```
 

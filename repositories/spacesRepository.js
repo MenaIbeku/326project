@@ -8,14 +8,18 @@ export async function listSpaces() {
 export async function createSpace({
   name,
   location,
-  capacity,
+  noiseLevel,
+  groupFriendly,
   isAvailable,
+  capacity
 }) {
   const space = await Space.create({
     name,
     location,
-    capacity,
-        isAvailable,
+    noiseLevel,
+    groupFriendly,
+    isAvailable,
+    capacity
   });
   return space.toObject();
 }
