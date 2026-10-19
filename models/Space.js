@@ -8,7 +8,7 @@ const spaceSchema = new mongoose.Schema(
     noiseLevel: { type: String, required: true },
     groupFriendly: { type: Boolean, default: false },
     isAvailable: { type: Boolean, default: true },
-    capacity: {type: String, required: true}
+    capacity: { type: Number },
   },
   { timestamps: true, bufferCommands: false },
 );
