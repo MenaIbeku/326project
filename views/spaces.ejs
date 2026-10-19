@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= title %></title>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+
+    <form id="space-form" action="/spaces" method="post">
+      <p>
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text">
+      </p>
+      <p>
+        <label for="location">Location</label>
+        <input id="location" name="location" type="text">
+      </p>
+      <p>
+        <label for="noiseLevel">Noise level</label>
+        <input id="noiseLevel" name="noiseLevel" type="text">
+      </p>
+      <p>
+        <label for="groupFriendly">
+          <input id="groupFriendly" name="groupFriendly" type="checkbox">
+          Group friendly
+        </label>
+      </p>
+      <button type="submit">Add study space</button>
+    </form>
+    <p id="form-error" role="alert" hidden></p>
+
+    <h2>Study spaces</h2>
+    <ul>
+      <% spaces.forEach((space) => { %>
+        <li>
+          <strong><%= space.name %></strong>
+          — <%= space.location %>
+          — Noise level: <%= space.noiseLevel %>
+        </li>
+      <% }); %>
+    </ul>
+  </body>
+</html>
