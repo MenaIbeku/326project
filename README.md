@@ -41,19 +41,24 @@ When the form is submitted, the browser sends a POST request to `/spaces`. The s
 
 ## System Diagram
 
-Browser Form
-    ↓
+```text
+GET /spaces
+Browser -> Router -> Controller -> Service -> Repository -> MongoDB
+MongoDB -> Repository -> Service -> Controller -> EJS page -> Browser
+
 POST /spaces
-    ↓
-Route
-    ↓
-Controller
-    ↓
-Service
-    ↓
-Repository
-    ↓
-MongoDB
+Form -> app.js (fetch JSON) -> express.json() -> Router -> Controller
+Controller -> Service (validation) -> Repository -> MongoDB
+MongoDB -> Repository -> Service -> Controller -> 201 JSON -> app.js
+app.js -> reload page -> GET /spaces shows the saved space
+
+Error handling
+Invalid input -> Service -> Controller -> 400 JSON
+Malformed JSON -> Error middleware -> 400 JSON
+Rejected promise -> asyncHandler -> next(err) -> Error middleware -> 500 JSON
+
+app.js displays POST errors and connection failures to the user.
+```
 
 ## Design Decisions
 
@@ -146,10 +151,7 @@ const space = await spacesRepository.createSpace({
 `listSpaces()` resolves array of plain objects, newest first (or `[]`).
 `createSpace(data)` resolves saved plain object, including its `_id` and timestamps.
 
-Both reject in the case of database errors
-listed space fields and does not handle HTTP, business rules, or result envelopes.
-The existing HTTP routes still return placeholder text until the controller and
-service are connected.
+listSpaces() and createSpace() reject on database errors. The repository only handles storage and does not contain HTTP handling, validation, or business logic.
 
 Run `npm test` for schema checks.
 
