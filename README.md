@@ -62,6 +62,7 @@ MongoDB
 **Mena Ibeku:** ...
 
 **Alexander Genov:** ...
+I kept the databases separate into speacesRepository.js, with listSpaces() and createSpace() providing the access to stored study spaces. This in turn keeps the storage code seapare from request handling and validation so that database changes are much easier to maintain. Mongoose was the schema I used to define the fields and defaults, and I returned plain objects so that the service layer can use results without having to depend on Mongoose Documents.
 
 
 ### Getting Started
