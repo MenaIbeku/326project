@@ -57,9 +57,11 @@ MongoDB
 
 ## Design Decisions
 
-**Benjamin Hamilton:** I kept the validation in the service layer instead of putting it in spacesController.js. We could’ve validated everything in the controller, but that would’ve mixed the request handling with the actual app rules. Keeping it in the service makes the controller cleaner and the validation easier to reuse.
+Benjamin Hamilton: I kept the validation in the service layer instead of putting it in spacesController.js. We could’ve validated everything in the controller, but that would’ve mixed the request handling with the actual app rules. Keeping it in the service makes the controller cleaner and the validation easier to reuse.
 
-**Mena Ibeku:** ...
+Mena Ibeku: I decided to handle input validation in the service layer instead of the controller. An alternative would have been to validate the submitted study space information directly in the controller before passing it to the repository. However, this would mix HTTP request handling with business logic, making the controller more complex and reducing the reusability of the validation rules. By placing validation in the service layer, the controller can focus on handling requests and responses, while the service ensures that only valid study space information reaches the repository. This approach also makes it easier to modify validation rules as our application develops.
+
+
 
 **Alexander Genov:** ...
 
@@ -119,7 +121,7 @@ The Study Space Finder application should now be running locally.
 Database layer (Alex)
 
 - `config/database.js` mongoose connect
-- `models/Space.js`: spaces in the storage schema 
+- `models/Space.js`: spaces in the storage schema
 - `repositories/spacesRepository.js`: reads and creates database records.
 
 fields: `name` (string), `location` (string), `noiseLevel` (string),
