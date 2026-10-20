@@ -1,17 +1,21 @@
 import "dotenv/config";
 import express from "express";
 import { connectDatabase } from "./config/database.js";
+import spacesRouter from "./routes/spaces.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
+app.use(express.static("public"));
 
 app.get("/", (req, res) => {
   res.send("Campus Study Space Finder");
 });
 
-app.get("/spaces", (req, res) => {
-  res.send("Available Study Spaces on Campus");
-});
+app.use("/spaces", spacesRouter);
 
 try {
   await connectDatabase();
