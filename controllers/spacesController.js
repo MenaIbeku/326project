@@ -10,13 +10,38 @@ export async function index(req, res) {
 }
 
 export async function create(req, res) {
-  const result = await spacesService.createSpace(req.body);
+  const isHtmx = req.get('HX-Request') === 'true';
+  const data = isHtmx
+    ? { ...req.body, groupFriendly: req.body.groupFriendly === 'on' }
+    : req.body;
 
-  if (!result.ok) {
-    return res
-      .status(result.error.status)
-      .json({ error: result.error.message });
+  try {
+    const result = await spacesService.createSpace(data);
+
+    if (!result.ok) {
+      if (isHtmx) {
+        return res.status(result.error.status)
+          .set('HX-Retarget', '#form-error')
+          .set('HX-Reswap', 'outerHTML')
+          .render('partials/form-error', { error: result.error.message });
+      }
+
+      return res.status(result.error.status).json({ error: result.error.message });
+    }
+
+    if (isHtmx) {
+      return res.status(201).render('partials/space', { space: result.value });
+    }
+
+    return res.status(201).json(result.value);
+  } catch (error) {
+    if (!isHtmx) throw error;
+
+    return res.status(500)
+      .set('HX-Retarget', '#form-error')
+      .set('HX-Reswap', 'outerHTML')
+      .render('partials/form-error', {
+        error: 'Could not save the study space. Please try again.',
+      });
   }
-
-  return res.status(201).json(result.value);
 }

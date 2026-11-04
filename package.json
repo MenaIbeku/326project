@@ -4,6 +4,9 @@
   "description": "## Team",
   "main": "server.js",
   "scripts": {
+    "build:css": "tailwindcss -i ./styles/input.css -o ./public/styles.css --minify",
+    "watch:css": "tailwindcss -i ./styles/input.css -o ./public/styles.css --watch",
+    "prestart": "npm run build:css",
     "start": "node server.js",
     "test": "node --test"
   },
@@ -24,5 +27,9 @@
     "ejs": "^7.0.2",
     "express": "^5.2.1",
     "mongoose": "^9.11.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.4",
+    "tailwindcss": "^4.3.4"
   }
 }
