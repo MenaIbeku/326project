@@ -4,43 +4,54 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous" defer></script>
     <script src="/app.js" defer></script>
   </head>
-  <body>
-    <h1><%= title %></h1>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <header class="mb-8 border-b border-slate-200 pb-6">
+        <p class="mb-2 text-sm font-semibold text-teal-700">Campus Study Space Finder</p>
+        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl"><%= title %></h1>
+        <p class="mt-3 max-w-xl text-slate-600">Find and add study spaces around campus.</p>
+      </header>
 
-    <form id="space-form" action="/spaces" method="post">
-      <p>
-        <label for="name">Name</label>
-        <input id="name" name="name" type="text">
-      </p>
-      <p>
-        <label for="location">Location</label>
-        <input id="location" name="location" type="text">
-      </p>
-      <p>
-        <label for="noiseLevel">Noise level</label>
-        <input id="noiseLevel" name="noiseLevel" type="text">
-      </p>
-      <p>
-        <label for="groupFriendly">
-          <input id="groupFriendly" name="groupFriendly" type="checkbox">
-          Group friendly
-        </label>
-      </p>
-      <button type="submit">Add study space</button>
-    </form>
-    <p id="form-error" role="alert" hidden></p>
+      <div class="grid items-start gap-8 md:grid-cols-2">
+        <section aria-labelledby="add-space-heading" class="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6">
+          <h2 id="add-space-heading" class="text-xl font-semibold">Add a study space</h2>
 
-    <h2>Study spaces</h2>
-    <ul>
-      <% spaces.forEach((space) => { %>
-        <li>
-          <strong><%= space.name %></strong>
-          — <%= space.location %>
-          — Noise level: <%= space.noiseLevel %>
-        </li>
-      <% }); %>
-    </ul>
+          <form id="space-form" action="/spaces" method="post" hx-post="/spaces" hx-target="#space-list" hx-swap="afterbegin" hx-disabled-elt="find button" class="mt-6 space-y-5">
+            <div>
+              <label for="name" class="mb-1.5 block text-sm font-medium">Name</label>
+              <input id="name" name="name" type="text" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20">
+            </div>
+            <div>
+              <label for="location" class="mb-1.5 block text-sm font-medium">Location</label>
+              <input id="location" name="location" type="text" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20">
+            </div>
+            <div>
+              <label for="noiseLevel" class="mb-1.5 block text-sm font-medium">Noise level</label>
+              <input id="noiseLevel" name="noiseLevel" type="text" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20">
+            </div>
+            <label for="groupFriendly" class="flex items-center gap-3 text-sm font-medium">
+              <input id="groupFriendly" name="groupFriendly" type="checkbox" class="h-4 w-4 shrink-0 accent-teal-700">
+              Group friendly
+            </label>
+            <button type="submit" class="w-full rounded-lg bg-teal-700 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-wait disabled:opacity-60">Add study space</button>
+          </form>
+          <%- include('partials/form-error', { error: '' }) %>
+        </section>
+
+        <section aria-labelledby="spaces-heading" class="min-w-0">
+          <h2 id="spaces-heading" class="text-xl font-semibold">Study spaces</h2>
+          <ul id="space-list" aria-live="polite" class="mt-5 space-y-4">
+            <% spaces.forEach((space) => { %>
+              <%- include('partials/space', { space }) %>
+            <% }); %>
+            <li class="hidden rounded-xl border border-dashed border-slate-300 p-6 text-sm text-slate-600 only:block">No study spaces yet. Add the first one using the form.</li>
+          </ul>
+        </section>
+      </div>
+    </main>
   </body>
 </html>
