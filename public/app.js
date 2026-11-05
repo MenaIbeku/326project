@@ -1,41 +1,24 @@
 const form = document.getElementById('space-form');
-const errorMessage = document.getElementById('form-error');
 
-function showError(message) {
-  errorMessage.textContent = message;
-  errorMessage.hidden = false;
-}
+form.addEventListener('htmx:beforeRequest', () => {
+  document.getElementById('form-error').textContent = '';
+});
 
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  errorMessage.textContent = '';
-  errorMessage.hidden = true;
-
-  const formData = new FormData(form);
-  const space = {
-    name: formData.get('name'),
-    location: formData.get('location'),
-    noiseLevel: formData.get('noiseLevel'),
-    groupFriendly: formData.has('groupFriendly'),
-  };
-
-  let response;
-  try {
-    response = await fetch('/spaces', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(space),
-    });
-  } catch {
-    showError('Could not reach the server. Please check your connection and try again.');
-    return;
+document.body.addEventListener('htmx:beforeSwap', (event) => {
+  if (event.detail.xhr.getResponseHeader('HX-Retarget') === '#form-error') {
+    // HTMX skips error responses by default, but these contain an HTML error partial.
+    event.detail.shouldSwap = true;
+    event.detail.isError = false;
   }
+});
 
-  if (!response.ok) {
-    const result = await response.json().catch(() => null);
-    showError(result?.error || 'Could not save the study space. Please try again.');
-    return;
+form.addEventListener('htmx:afterRequest', (event) => {
+  if (event.detail.xhr.status === 201) {
+    form.reset();
   }
+});
 
-  window.location.reload();
+form.addEventListener('htmx:sendError', () => {
+  document.getElementById('form-error').textContent =
+    'Could not reach the server. Please check your connection and try again.';
 });
