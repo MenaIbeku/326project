@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test"
-  },
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=_tests_",
+    "test:node": "node --test test/*.test.js"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MenaIbeku/326project.git"
@@ -24,5 +25,8 @@
     "ejs": "^7.0.2",
     "express": "^5.2.1",
     "mongoose": "^9.11.2"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2"
   }
 }

@@ -66,6 +66,8 @@ Benjamin Hamilton: I kept the validation in the service layer instead of putting
 
 Mena Ibeku: I decided to handle input validation in the service layer instead of the controller. An alternative would have been to validate the submitted study space information directly in the controller before passing it to the repository. However, this would mix HTTP request handling with business logic, making the controller more complex and reducing the reusability of the validation rules. By placing validation in the service layer, the controller can focus on handling requests and responses, while the service ensures that only valid study space information reaches the repository. This approach also makes it easier to modify validation rules as our application develops.
 
+For Sprint 3, I decided to use Jest's unstable_mockModule to mock our repository when testing the service layer. An alternative would have been to run tests against our actual MongoDB database, but that would make the tests slower and dependent on a working database connection. Mocking the repository allows us to test our validation and business rules independently, making tests faster, more reliable, and easier to debug.
+
 
 
 **Alexander Genov:** ...
