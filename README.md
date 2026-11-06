@@ -40,6 +40,8 @@ The form collects:
 
 When the form is submitted, HTMX sends a POST request to `/spaces`. The service validates the input and the repository saves the space to MongoDB. The controller returns an EJS list-item partial, which HTMX inserts at the top of the list without reloading the page. Validation errors appear below the form, and a successful submission resets the fields.
 
+Click a study-space name to view `/spaces/:id` using its MongoDB `_id`. To test, add a space, click its name, and reload the detail page to confirm the same record appears.
+
 ## Sprint 3 Changes
 
 | Change | Implementation |
@@ -52,7 +54,7 @@ When the form is submitted, HTMX sends a POST request to `/spaces`. The service 
 ## System Diagram
 
 ```text
-GET /spaces
+GET /spaces and GET /spaces/:id
 Browser -> Router -> Controller -> Service -> Repository -> MongoDB
 MongoDB -> Repository -> Service -> Controller -> EJS page -> Browser
 
@@ -97,7 +99,7 @@ I kept the databases separate into speacesRepository.js, with listSpaces() and c
 
 ## Getting Started
 
-Follow these steps to get Study Space Finder running on your local machine.
+Follow these steps inside the course dev container.
 
 ### 1. Clone the repository
 
@@ -113,43 +115,27 @@ Then navigate into the project directory:
 cd 326project
 ```
 
-### 2. Install dependencies
+### 2. Start the application
 
 Make sure Node.js 22.16 or newer and npm are installed on your computer.
 
-Install the project's dependencies:
-
-```sh
-npm install
-```
-
-### 3. Configure MongoDB
-
-Copy `.env.example` to `.env`:
+Copy the example configuration, start the container's MongoDB service, install dependencies, and start the app:
 
 ```sh
 cp .env.example .env
+dc-up mongo
+npm install
+npm start
 ```
 
-Set `MONGODB_URI` in `.env` to your MongoDB connection string. The example uses
-a local MongoDB instance at `127.0.0.1:27017` with database `study_space_finder`.
-Start MongoDB separately, or use a MongoDB Atlas connection string. Never commit
-`.env` or database credentials. `PORT` defaults to `3000`.
+The example connects to the dev container's `mongo` service and `devdb` database. Keep `.env` out of Git. `PORT` defaults to `3000`.
 
 The server connects to MongoDB before listening. If the connection fails, it exits
 with an error instead of accepting requests without storage.
 
-### 4. Start the application
-
-Start the server using:
-
-```sh
-npm start
-```
-
 The `prestart` script builds `public/styles.css` with the locally installed Tailwind CLI before starting Express.
 
-### 5. Open the application
+### 3. Open the application
 
 Once the server starts successfully, open a browser and navigate to:
 
@@ -176,7 +162,7 @@ and optional `capacity` (number). MongoDB supplies `_id`; Mongoose supplies
 | `updateById(id, changes)` | The updated plain object, or `null` if the record is missing. |
 | `removeById(id)` | The deleted plain object, or `null` if the record is missing. |
 
-Per-record methods accept MongoDB ObjectIds or their 24-character hexadecimal strings and reject malformed IDs. Updates allow only the editable schema fields and run schema validation. The service handles business-rule validation; the repository handles storage. The current page supports listing and creating spaces. Find, update, and delete are available at the repository layer.
+Per-record methods accept MongoDB ObjectIds or their 24-character hexadecimal strings and reject malformed IDs. Updates allow only the editable schema fields and run schema validation. The service handles business-rule validation; the repository handles storage. The browser supports listing, creating, and viewing individual spaces. Update and delete are available at the repository layer.
 
 The service calls the repository, for example:
 
@@ -214,7 +200,7 @@ The integration tests need a local `mongod` executable on `PATH`. If it is insta
 
 ### MongoDB Persistence
 
-1. Start the configured MongoDB server and run `npm start`.
+1. Run `dc-up mongo`, then `npm start`.
 2. Open `/spaces` and add a study space with a recognizable name.
 3. Stop the app with Ctrl+C, leave MongoDB running, and run `npm start` again.
 4. Reload `/spaces`. The saved space should still be listed.

@@ -9,6 +9,21 @@ export async function index(req, res) {
   });
 }
 
+export async function show(req, res) {
+  try {
+    const space = await spacesService.getSpace(req.params.id);
+
+    if (!space) return res.status(404).send('Study space not found.');
+
+    return res.render('space', { space });
+  } catch (error) {
+    if (error.code === 'INVALID_SPACE_ID') {
+      return res.status(400).send('Invalid study space ID.');
+    }
+    throw error;
+  }
+}
+
 export async function create(req, res) {
   const isHtmx = req.get('HX-Request') === 'true';
   const data = isHtmx
