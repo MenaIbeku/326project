@@ -92,11 +92,8 @@ Mena Ibeku: I decided to handle input validation in the service layer instead of
 
 For Sprint 3, I decided to use Jest's unstable_mockModule to mock our repository when testing the service layer. An alternative would have been to run tests against our actual MongoDB database, but that would make the tests slower and dependent on a working database connection. Mocking the repository allows us to test our validation and business rules independently, making tests faster, more reliable, and easier to debug.
 
-
-
 **Alexander Genov:** ...
-I kept the databases separate into speacesRepository.js, with listSpaces() and createSpace() providing the access to stored study spaces. This in turn keeps the storage code seapare from request handling and validation so that database changes are much easier to maintain. Mongoose was the schema I used to define the fields and defaults, and I returned plain objects so that the service layer can use results without having to depend on Mongoose Documents.
-
+I kept the databases separate into speacesRepository.js, with listSpaces() and createSpace() providing the access to stored study spaces. This in turn keeps the storage code seapare from request handling and validation so that database changes are much easier to maintain. Mongoose was the schema I used to define the fields and defaults, and I returned plain objects so that the service layer can use results without having to depend on Mongoose Documents. For sprint 3 I continued to implement test cases and used CRUD methods in order to retrieve, update, and remove after creation, the ID-based operations identify each record, while also keeping database access in the repository separate from the storage logic from the rest of the application. The integration tests in turn verify that the operations in this case will work against MongoDB using the same record ID.
 
 ## Getting Started
 
