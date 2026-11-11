@@ -42,9 +42,13 @@ When the form is submitted, the browser sends a POST request to `/spaces`. The s
 ## System Diagram
 
 ```text
+Database connection at startup
+server.js -> config/database.js -> mongoose.connect(MONGODB_URI) -> MongoDB
+Connection succeeds -> server starts listening
+
 GET /spaces
-Browser -> Router -> Controller -> Service -> Repository -> MongoDB
-MongoDB -> Repository -> Service -> Controller -> EJS page -> Browser
+Browser -> Router -> Controller -> Service -> Repository -> Space model (models/Space.js) -> MongoDB
+MongoDB -> Space model (models/Space.js) -> Repository -> Service -> Controller -> EJS page -> Browser
 
 POST /spaces
 Form -> app.js (fetch JSON) -> express.json() -> Router -> Controller
@@ -71,7 +75,8 @@ For Sprint 3, I decided to use Jest's unstable_mockModule to mock our repository
 
 
 **Alexander Genov:** ...
-I kept the databases separate into speacesRepository.js, with listSpaces() and createSpace() providing the access to stored study spaces. This in turn keeps the storage code seapare from request handling and validation so that database changes are much easier to maintain. Mongoose was the schema I used to define the fields and defaults, and I returned plain objects so that the service layer can use results without having to depend on Mongoose Documents.
+I kept the databases separate into speacesRepository.js, with listSpaces() and createSpace() providing the access to stored study spaces. This in turn keeps the storage code seapare from request handling and validation so that database changes are much easier to maintain. Mongoose was the schema I used to define the fields and defaults, and I returned plain objects so that the service layer can use results without having to depend on Mongoose Documents. For sprint 3 I chose findByIdAndUpdate to update the individual study spaces, an alternative would be to retireve the spacew with the findbyID and modify the mongoose document and call save() after. I rather decided to directly update in this case since it avoids a separate read and does the changes in one databse operation. Changing one room availability should only update the specific room at hand and saving the whole list would read and write unrelated spaces and could overwrite another users changes if said list is outdated. The implementation we decided on only selects the record's allowed fields and the integration tests verify that the ID and unchanged fields remain preserved.
+
 
 
 ### Getting Started
