@@ -15,6 +15,10 @@ app.get("/", (req, res) => {
   res.send("Campus Study Space Finder");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/spaces", spacesRouter);
 
 app.use((err, req, res, next) => {
