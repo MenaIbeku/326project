@@ -51,6 +51,16 @@ Click a study-space name to view `/spaces/:id` using its MongoDB `_id`. To test,
 | HTMX | The add-space form swaps server-rendered HTML into the existing list instead of using handwritten fetch and reload code. |
 | Tailwind | Local Tailwind CLI commands build the stylesheet. Utility classes provide a stacked mobile layout and two desktop columns. |
 
+## Sprint 4 Health Check
+
+Use `GET /health` to check that the server is running. It's a public route, so you don't need to log in. It returns HTTP `200` with the JSON response `{ "status": "ok" }`.
+
+Once the app is running, try it with:
+
+```sh
+curl -i http://localhost:3000/health
+```
+
 ## System Diagram
 
 ```text
