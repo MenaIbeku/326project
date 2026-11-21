@@ -94,6 +94,8 @@ Benjamin Hamilton: I kept the validation in the service layer instead of putting
 
 For Sprint 3, I used HTMX for the add-space form instead of keeping the fetch request and reloading the page. HTMX let the server return the new space directly, so I needed less frontend JavaScript and the page did not have to reload. Keeping fetch would have meant more JavaScript or a full-page reload after every submission.
 
+For sprint 4, I used HTMX to block repeat submissions while keeping the Add study space button focusable. I could have kept disabling the button during each request. In testing that made the button lose keyboard focus on slower requests. Keeping focus on the button means the next Tab after a successful submission goes straight to the new study space.
+
 Mena Ibeku: I decided to handle input validation in the service layer instead of the controller. An alternative would have been to validate the submitted study space information directly in the controller before passing it to the repository. However, this would mix HTTP request handling with business logic, making the controller more complex and reducing the reusability of the validation rules. By placing validation in the service layer, the controller can focus on handling requests and responses, while the service ensures that only valid study space information reaches the repository. This approach also makes it easier to modify validation rules as our application develops.
 
 For Sprint 3, I decided to use Jest's unstable_mockModule to mock our repository when testing the service layer. An alternative would have been to run tests against our actual MongoDB database, but that would make the tests slower and dependent on a working database connection. Mocking the repository allows us to test our validation and business rules independently, making tests faster, more reliable, and easier to debug.
@@ -244,6 +246,14 @@ Use the browser's responsive viewport tool to check `/spaces` at these widths:
 
 - **375px:** the form is above the list, and the page fits without horizontal scrolling.
 - **1280px:** the form and list are side by side. The `md:grid-cols-2` utility makes this layout change.
+
+## Sprint 4 Accessibility
+
+The list and detail pages passed tab order, form-label, and 4.5:1 contrast checks, including button hover. The fixes strengthen faint focus outlines, prevent focus loss during HTMX submissions and keep the error alert in place across swaps.
+
+1. Open `/spaces`. Use Tab and Shift+Tab to check the focus outline, and Space to toggle Group friendly.
+2. Submit with Space on **Add study space** while the form is blank, then fill it in and submit with Enter. Check that focus stays on the button through both responses. The first shows an error and the second adds a result.
+3. Tab to the new result and press Enter. Use the **Back to study spaces** link to return by keyboard.
 
 ## Development Workflow
 

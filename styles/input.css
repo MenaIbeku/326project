@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+@layer base {
+  :where(a[href], button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--color-teal-700);
+    outline-offset: 2px;
+  }
+}

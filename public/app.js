@@ -1,6 +1,8 @@
 const form = document.getElementById('space-form');
+const submitButton = form.querySelector('button[type="submit"]');
 
 form.addEventListener('htmx:beforeRequest', () => {
+  submitButton.setAttribute('aria-disabled', 'true');
   document.getElementById('form-error').textContent = '';
 });
 
@@ -13,6 +15,7 @@ document.body.addEventListener('htmx:beforeSwap', (event) => {
 });
 
 form.addEventListener('htmx:afterRequest', (event) => {
+  submitButton.removeAttribute('aria-disabled');
   if (event.detail.xhr.status === 201) {
     form.reset();
   }
