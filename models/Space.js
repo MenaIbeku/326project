@@ -8,10 +8,7 @@ const spaceSchema = new mongoose.Schema(
     groupFriendly: { type: Boolean, default: false },
     isAvailable: { type: Boolean, default: true },
     capacity: { type: Number },
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }
+    owner: {type: mongoose.Schema.Types.ObjectId, ref: "User", required:true}
   },
   { timestamps: true, bufferCommands: false }
 );

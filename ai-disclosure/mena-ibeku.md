@@ -1,4 +1,5 @@
 Sprint 0: I did not use AI
 Sprint 1: I did not use AI
 Sprint 2: I used AI to remember some syntax like the trim() function. I also used it to remember how to do the export function
-Sprint 3, I used AI to help plan possible Jest tests for the Study Space Finder service layer, and used it to remember the syntax for how to write those tests.  
+Sprint 3: I used AI to help plan possible Jest tests for the Study Space Finder service layer, and used it to remember the syntax for how to write those tests.  
+Sprint 4: I used AI to help plan and implement ownership-based authorization for study-space listings, including authentication middleware, service-layer permission checks, and Jest tests. I also used it to understand how to integrate these changes with our existing code and verify that owners and admins have the correct permissions.
