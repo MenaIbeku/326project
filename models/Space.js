@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// Storage shape only service layer (Mena) for validation & rules
 const spaceSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -9,8 +8,12 @@ const spaceSchema = new mongoose.Schema(
     groupFriendly: { type: Boolean, default: false },
     isAvailable: { type: Boolean, default: true },
     capacity: { type: Number },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }
   },
-  { timestamps: true, bufferCommands: false },
+  { timestamps: true, bufferCommands: false }
 );
 
 export default mongoose.model("Space", spaceSchema);
