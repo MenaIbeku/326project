@@ -3,21 +3,15 @@ import * as usersRepository from "../repositories/usersRepository.js";
 import { SESSION_COOKIE_NAME, getCookieOptions } from "../config/session.js";
 
 async function establishSession(req, user) {
-  await new Promise((resolve, reject) => {
-    req.session.regenerate((error) => error ? reject(error) : resolve());
-  });
+  await promisify(req.session.regenerate).call(req.session);
   req.session.userId = String(user._id);
   req.session.role = user.role;
-  await new Promise((resolve, reject) => {
-    req.session.save((error) => error ? reject(error) : resolve());
-  });
+  await promisify(req.session.save).call(req.session);
 }
 
 async function clearSession(req, res) {
   if (req.session) {
-    await new Promise((resolve, reject) => {
-      req.session.destroy((error) => error ? reject(error) : resolve());
-    });
+    await promisify(req.session.destroy).call(req.session);
   }
   res.clearCookie(SESSION_COOKIE_NAME, getCookieOptions(req.app.get("env")));
 }
@@ -62,3 +56,4 @@ export async function me(req, res) {
   req.session.role = user.role;
   return res.status(200).json({ user });
 }
+import { promisify } from "node:util";

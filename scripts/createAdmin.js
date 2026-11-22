@@ -66,13 +66,6 @@ export async function runCreateAdmin() {
   let account;
   try {
     account = await promptForAdminAccount();
-  } catch (error) {
-    console.error(error.name === "AbortError" ? "Admin creation cancelled." : error.message);
-    process.exitCode = 1;
-    return;
-  }
-
-  try {
     await connectDatabase();
     const result = await createAdmin(account);
     if (!result.ok) {
@@ -82,11 +75,13 @@ export async function runCreateAdmin() {
     }
 
     console.log(`Admin account created for ${result.value.email}. You can now log in.`);
-  } catch {
-    console.error("Could not create the admin account.");
+  } catch (error) {
+    if (account) console.error("Could not create the admin account.");
+    else if (error.name === "AbortError") console.error("Admin creation cancelled.");
+    else console.error(error.message);
     process.exitCode = 1;
   } finally {
-    account.password = undefined;
+    if (account) account.password = undefined;
     try {
       await disconnectDatabase();
     } catch {
