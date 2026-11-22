@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-// Checks the storage format only
+// Checks the storage format only - must hash passwords.
 const bcryptHashPattern = /^\$2[ab]\$(0[4-9]|[12]\d|3[01])\$[./A-Za-z0-9]{53}$/;
 
 function omitPasswordHash(_document, result) {
@@ -18,12 +18,8 @@ const userSchema = new mongoose.Schema(
       select: false,
       match: [bcryptHashPattern, "passwordHash must be a bcrypt hash"],
     },
-    role: {
-      type: String,
-      required: true,
-      enum: ["member", "admin"],
-      default: "member",
-    },
+    // Signup must ignore client-provided roles <-
+    role: { type: String, required: true, enum: ["member", "admin"], default: "member" },
   },
   {
     timestamps: true,

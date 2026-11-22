@@ -4,6 +4,10 @@ export async function listSpaces() {
   return await spacesRepository.listSpaces();
 }
 
+export async function getSpace(id) {
+  return await spacesRepository.findById(id);
+}
+
 export async function createSpace(data) {
   const name = typeof data?.name === "string"
     ? data.name.trim()

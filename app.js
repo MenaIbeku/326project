@@ -18,6 +18,10 @@ export function createApp({
   app.set("view engine", "ejs");
   app.use(express.static("public"));
 
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   app.use(createSessionMiddleware({
     store: sessionStore,
     secret: sessionSecret,

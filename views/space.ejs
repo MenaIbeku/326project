@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= space.name %></title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900">
+    <main class="mx-auto max-w-xl px-4 py-8 wrap-anywhere">
+      <a href="/spaces" class="text-teal-700">Back to study spaces</a>
+      <h1 class="mt-6 text-3xl font-bold"><%= space.name %></h1>
+      <p class="mt-3">Location: <%= space.location %></p>
+      <p class="mt-3">Noise level: <%= space.noiseLevel %></p>
+    </main>
+  </body>
+</html>

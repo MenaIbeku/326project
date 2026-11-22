@@ -357,6 +357,22 @@ describe("authentication with MongoDB", () => {
     const listed = await fetch(`${baseUrl}/spaces`);
     assert.equal(listed.status, 200);
     assert.match(await listed.text(), /Library Room 201/);
+    const detail = await fetch(`${baseUrl}/spaces/${created.body._id}`);
+    assert.equal(detail.status, 200);
+    assert.match(await detail.text(), /Library Room 201/);
+    const missing = await fetch(`${baseUrl}/spaces/${new mongoose.Types.ObjectId()}`);
+    assert.equal(missing.status, 404);
+    await missing.text();
+    const invalid = await fetch(`${baseUrl}/spaces/not-an-id`);
+    assert.equal(invalid.status, 400);
+    await invalid.text();
+  });
+
+  it("preserves the public health endpoint without creating a session", async () => {
+    const health = await request("/health");
+    assert.equal(health.response.status, 200);
+    assert.deepEqual(health.body, { status: "ok" });
+    assert.equal(health.cookie, undefined);
   });
 
   it("requires JSON and rejects cross-origin authentication requests", async () => {

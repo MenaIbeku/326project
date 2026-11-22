@@ -9,6 +9,7 @@ function asyncHandler(handler) {
 const router = express.Router();
 
 router.get("/", asyncHandler(spacesController.index));
+router.get("/:id", asyncHandler(spacesController.show));
 router.post("/", asyncHandler(spacesController.create));
 
 export default router;
