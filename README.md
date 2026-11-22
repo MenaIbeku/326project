@@ -137,7 +137,7 @@ cd 326project
 
 Make sure Node.js 22.16 or newer and npm are installed on your computer.
 
-Copy the example configuration, start the container's MongoDB service, and install dependencies:
+Copy the example config, start the container's MongoDB service install dependency.
 
 ```sh
 cp .env.example .env
@@ -145,7 +145,7 @@ dc-up mongo
 npm install
 ```
 
-The example connects to the dev container's `mongo` service and `devdb` database. Keep `.env` out of Git. `PORT` defaults to `3000`.
+the example confid connects to the dev container's `mongo` service and `devdb` database. Keep `.env` out of Git. `PORT` defaults to `3000`.
 
 Generate a session secret and paste its output into `SESSION_SECRET` in `.env`:
 
@@ -154,11 +154,9 @@ node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))'
 ```
 
 Keep this secret private and stable across restarts and app instances. The server
-requires at least 32 bytes; it does not provide a fallback secret. Changing it
+requires at least 32 bytes. it does not provide a fallback secret. Changing it
 invalidates existing session cookies. Use `NODE_ENV=development` for local HTTP.
-In production, set `NODE_ENV=production` and serve the app over HTTPS. Set
-`TRUST_PROXY=1` only when the app runs behind exactly one trusted reverse proxy
-that supplies the original protocol and preserves the host header.
+In production, set `NODE_ENV=production` and serve the app over HTTPS.
 
 After setting `SESSION_SECRET`, start the app:
 
@@ -167,8 +165,7 @@ npm start
 ```
 
 The server connects to MongoDB before listening. If the connection fails, it exits
-with an error instead of accepting requests without storage. Startup also waits
-for the unique user email index and the session expiry index.
+with an error instead of accepting requests without storage. startup waits also for unique email index and session expiry index Startup also waits
 
 The `prestart` script builds `public/styles.css` with the locally installed Tailwind CLI before starting Express.
 
