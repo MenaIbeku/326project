@@ -9,7 +9,6 @@ function requireValidId(id) {
   }
 }
 
-// Return plain objects so the service does not depend on Mongoose documents.
 export async function listSpaces() {
   return Space.find().sort({ createdAt: -1, _id: -1 }).lean().exec();
 }
@@ -20,7 +19,8 @@ export async function createSpace({
   noiseLevel,
   groupFriendly,
   isAvailable,
-  capacity
+  capacity,
+  owner
 }) {
   const space = await Space.create({
     name,
@@ -28,8 +28,10 @@ export async function createSpace({
     noiseLevel,
     groupFriendly,
     isAvailable,
-    capacity
+    capacity,
+    owner
   });
+
   return space.toObject();
 }
 
@@ -48,12 +50,16 @@ export async function updateById(id, changes) {
     "noiseLevel",
     "groupFriendly",
     "isAvailable",
-    "capacity",
+    "capacity"
   ];
+
   const updates = {};
 
   for (const field of allowedFields) {
-    if (Object.hasOwn(changes, field) && changes[field] !== undefined) {
+    if (
+      Object.hasOwn(changes, field) &&
+      changes[field] !== undefined
+    ) {
       updates[field] = changes[field];
     }
   }
@@ -61,7 +67,7 @@ export async function updateById(id, changes) {
   return Space.findByIdAndUpdate(
     id,
     { $set: updates },
-    { returnDocument: "after", runValidators: true },
+    { returnDocument: "after", runValidators: true }
   ).lean().exec();
 }
 
@@ -73,5 +79,5 @@ export async function removeById(id) {
 
 export {
   listSpaces as getAll,
-  createSpace as create,
+  createSpace as create
 };
