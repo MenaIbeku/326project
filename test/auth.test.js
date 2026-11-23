@@ -116,9 +116,26 @@ describe("authentication", () => {
     assert.equal(session.passwordHash, undefined);
     assert.equal((await request("/auth/me", undefined, login.cookie)).status, 200);
     assert.equal((await request("/auth/me", undefined, signup.cookie)).status, 401);
+    const tamperedCookie = login.cookie.slice(0, -1) + (login.cookie.endsWith("a") ? "b" : "a");
+    assert.equal((await request("/auth/me", undefined, tamperedCookie)).status, 401);
     assert.equal((await request("/auth/logout", {}, login.cookie)).status, 204);
     assert.equal(await sessions.countDocuments(), 0);
     assert.equal((await request("/auth/me", undefined, login.cookie)).status, 401);
+  });
+
+  it("serves browser forms and account controls", async () => {
+    for (const page of ["signup", "login"]) {
+      const response = await fetch(`${baseUrl}/auth/${page}`);
+      assert.equal(response.status, 200);
+      const html = await response.text();
+      assert.match(html, /id="auth-form"/);
+      assert.match(html, /type="password"/);
+      assert.match(html, /src="\/auth-client.js"/);
+      assert.ok(html.includes(`action="/auth/${page}"`));
+      assert.equal(html.includes('name="role"'), false);
+    }
+    const spaces = await fetch(`${baseUrl}/spaces`);
+    assert.match(await spaces.text(), /id="auth-status"/);
   });
 
   it("rejects incorrect passwords and unknown users", async () => {

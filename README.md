@@ -68,6 +68,28 @@ Database connection at startup
 server.js -> config/database.js -> mongoose.connect(MONGODB_URI) -> MongoDB
 Connection succeeds -> server starts listening
 
+Authentication (Alex)
+GET /auth/signup or /auth/login -> routes/auth.js -> views/auth.ejs -> Browser
+Form -> public/auth-client.js -> JSON POST /auth/signup or /auth/login
+app.js -> express-session (config/session.js) -> routes/auth.js -> authController.js
+Signup: authService.js -> bcrypt.hash -> usersRepository.js -> User model -> MongoDB users
+Login: authService.js -> usersRepository.js -> User model -> MongoDB users
+Stored password hash -> bcrypt.compare -> verified user -> authController.js
+Controller -> regenerate session -> set userId and role -> save through connect-mongo
+MongoDB sessions <- session data; Browser <- signed study-space.sid cookie
+Successful signup/login -> public/auth-client.js -> /spaces
+
+Authenticated requests and status
+Browser cookie -> express-session verifies signature -> connect-mongo loads session
+req.session.userId and req.session.role -> downstream routes/controllers
+public/auth-client.js -> GET /auth/me -> authController.js -> usersRepository.js -> User model
+User JSON -> account status in views/partials/auth-status.ejs
+
+Logout
+Log out button -> JSON POST /auth/logout -> authController.js
+Controller -> destroy MongoDB session + clear cookie -> 204
+public/auth-client.js -> /auth/login; later GET /auth/me -> 401
+
 GET /spaces
 Browser -> Router -> Controller -> Service -> Repository -> Space model (models/Space.js) -> MongoDB
 MongoDB -> Space model (models/Space.js) -> Repository -> Service -> Controller -> EJS page -> Browser
@@ -113,6 +135,10 @@ For Sprint 3, I decided to use Jest's unstable_mockModule to mock our repository
 **Alexander Genov:** ...
 I kept the databases separate into speacesRepository.js, with listSpaces() and createSpace() providing the access to stored study spaces. This in turn keeps the storage code seapare from request handling and validation so that database changes are much easier to maintain. Mongoose was the schema I used to define the fields and defaults, and I returned plain objects so that the service layer can use results without having to depend on Mongoose Documents. For sprint 3 I chose findByIdAndUpdate to update the individual study spaces, an alternative would be to retireve the spacew with the findbyID and modify the mongoose document and call save() after. I rather decided to directly update in this case since it avoids a separate read and does the changes in one databse operation. Changing one room availability should only update the specific room at hand and saving the whole list would read and write unrelated spaces and could overwrite another users changes if said list is outdated. The implementation we decided on only selects the record's allowed fields and the integration tests verify that the ID and unchanged fields remain preserved.
 
+
+
+**Alexander Genov — Sprint 4:** I chose `express-session` with `connect-mongo` instead of JWT access tokens for the purpose that the 
+sessions in MongoDb are kept across the case of a server restart and allows for the logout to invalidate a session by deletign. JWTs can avoid a session lookup but an immediate logout needs extra tracking or waiting for tokens to expaire. In this scenario, the database lookup allows for simpler session handling and sharing userID / role with the authorized code.
 
 
 ## Getting Started
@@ -267,8 +293,11 @@ All POST requests must send `Content-Type: application/json`. Authentication
 writes reject a different `Origin` when one is supplied; these endpoints are
 intended for a frontend served from the same origin. Validation failures return
 `400`, wrong credentials return `401`, and errors use `{ "error": "..." }`.
-Responses never include passwords or password hashes. There are no signup/login
-pages in this change; the endpoints are ready for the team's frontend integration.
+Responses never include passwords or password hashes. Browser forms are available
+at `/auth/signup` and `/auth/login`. `public/auth-client.js` submits them to the
+existing JSON endpoints and displays errors. The account bar on the forms and
+study-space pages shows the user's name and role and provides a Log out button.
+These browser controls require JavaScript.
 
 After signup or login, the server regenerates and saves the session before sending
 the response. The agreed integration fields are:
@@ -309,6 +338,21 @@ default admin password. Creating an admin does not log in; use `/auth/login` nex
 Public signup always calls the member-only creation method. Supplying `role`,
 `userId`, `passwordHash`, or nested session fields in a request cannot grant admin
 access or replace the server-generated account identity.
+
+#### Browser authentication verification (Alex)
+
+1. Follow Getting Started to configure `.env`, start MongoDB, and run `npm start`.
+2. Open `/auth/signup`. Register with a new email and a password meeting the requirements above. You should arrive at `/spaces` and see `Logged in as [name] (member).`
+3. Reload the page, then visit `/auth/me`. Your account should still be returned without a password or hash. Return to `/spaces`.
+4. Click **Log out**. You should arrive at `/auth/login` with `Not logged in.` displayed. Visiting `/auth/me` now returns `401` with `Login required.`
+5. Submit an incorrect password on `/auth/login`; an error should appear. Submit the correct password and confirm you return to `/spaces` with your name and role displayed.
+6. if you signup with the same email you will get a duplicate email error.
+7. To check admin login, use a different test email and then Log out of the member account then log in with that admin account and confirm the status shows `(admin)`.
+
+For the authentication checks run `node --test test/auth.test.js` with
+`mongod` These include hashed storage, member-only signup, duplicate
+accounts, invalid credentials, session persistence and logout, tampered-cookie
+rejection, browser form routes, and admin creation.
 
 ## Sprint 3 Verification
 

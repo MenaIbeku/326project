@@ -21,6 +21,8 @@ router.use((req, res, next) => {
 });
 
 // Express 5 forwards rejected async handlers to the application's error middleware.
+router.get("/signup", (req, res) => res.render("auth", { signup: true }));
+router.get("/login", (req, res) => res.render("auth", { signup: false }));
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 router.post("/logout", authController.logout);
