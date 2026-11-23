@@ -23,7 +23,7 @@ function publicUser(user) {
   return { _id, name, email, role, createdAt, updatedAt };
 }
 
-async function createAccount(data, create) {
+async function createAccount(data, isAdmin = false) {
   const name = typeof data?.name === "string" ? data.name.trim() : "";
   const email = normalizeEmail(data?.email);
   const password = data?.password;
@@ -40,7 +40,10 @@ async function createAccount(data, create) {
   // Preserve spaces in the password
   const passwordHash = await bcrypt.hash(password, HASH_ROUNDS);
   try {
-    const user = await create({ name, email, passwordHash });
+    const account = { name, email, passwordHash };
+    const user = isAdmin
+      ? await usersRepository.createAdmin(account)
+      : await usersRepository.createUser(account);
     return { ok: true, value: publicUser(user) };
   } catch (error) {
     if (error.code === 11000) {
@@ -51,12 +54,12 @@ async function createAccount(data, create) {
 }
 
 export async function signup(data) {
-  return createAccount(data, usersRepository.createUser);
+  return createAccount(data);
 }
 
 // Used only by the operator command
 export async function createAdmin(data) {
-  return createAccount(data, usersRepository.createAdmin);
+  return createAccount(data, true);
 }
 
 export async function login(data) {

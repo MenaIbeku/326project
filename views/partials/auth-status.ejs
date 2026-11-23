@@ -1,0 +1,11 @@
+<nav aria-label="Account" class="mb-8 mt-3">
+  <p id="auth-status" role="status">Checking login status...</p>
+  <div id="guest-links" hidden>
+    <a href="/auth/login" class="text-teal-700">Log in</a>
+    <span aria-hidden="true"> | </span>
+    <a href="/auth/signup" class="text-teal-700">Sign up</a>
+  </div>
+  <button id="logout-button" type="button" hidden class="rounded-lg bg-teal-700 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-800">Log out</button>
+  <p id="auth-error" role="alert" tabindex="-1"></p>
+</nav>
+<script src="/auth-client.js" defer></script>

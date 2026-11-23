@@ -39,12 +39,11 @@ export async function createAdmin({ name, email, passwordHash }) {
 
 export async function findById(id) {
   requireValidId(id);
-  return User.findById(id).select("-passwordHash").lean().exec();
+  return User.findById(id).lean().exec();
 }
 
 export async function findByEmail(email) {
-  return User.findOne({ email: normalizeEmail(email) })
-    .select("-passwordHash").lean().exec();
+  return User.findOne({ email: normalizeEmail(email) }).lean().exec();
 }
 
 // Only authentication code
