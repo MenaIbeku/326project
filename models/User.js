@@ -3,6 +3,11 @@ import mongoose from "mongoose";
 // Checks the storage format only - must hash passwords.
 const bcryptHashPattern = /^\$2[ab]\$(0[4-9]|[12]\d|3[01])\$[./A-Za-z0-9]{53}$/;
 
+function omitPasswordHash(_document, result) {
+  delete result.passwordHash;
+  return result;
+}
+
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -19,12 +24,8 @@ const userSchema = new mongoose.Schema(
   {
     timestamps: true,
     bufferCommands: false,
-    toJSON: {
-      transform(_document, result) {
-        delete result.passwordHash;
-        return result;
-      },
-    },
+    toJSON: { transform: omitPasswordHash },
+    toObject: { transform: omitPasswordHash },
   },
 );
 

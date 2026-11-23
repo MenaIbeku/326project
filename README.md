@@ -139,19 +139,38 @@ cd 326project
 
 Make sure Node.js 22.16 or newer and npm are installed on your computer.
 
-Copy the example configuration, start the container's MongoDB service, install dependencies, and start the app:
+Copy the example configuration, start the container's MongoDB service, and install dependencies:
 
 ```sh
 cp .env.example .env
 dc-up mongo
 npm install
-npm start
 ```
 
 The example connects to the dev container's `mongo` service and `devdb` database. Keep `.env` out of Git. `PORT` defaults to `3000`.
 
+Generate a session secret and paste its output into `SESSION_SECRET` in `.env`:
+
+```sh
+node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))'
+```
+
+Keep this secret private and stable across restarts and app instances. The server
+requires at least 32 bytes; it does not provide a fallback secret. Changing it
+invalidates existing session cookies. Use `NODE_ENV=development` for local HTTP.
+In production, set `NODE_ENV=production` and serve the app over HTTPS. Set
+`TRUST_PROXY=1` only when the app runs behind exactly one trusted reverse proxy
+that supplies the original protocol and preserves the host header.
+
+After setting `SESSION_SECRET`, start the app:
+
+```sh
+npm start
+```
+
 The server connects to MongoDB before listening. If the connection fails, it exits
-with an error instead of accepting requests without storage.
+with an error instead of accepting requests without storage. Startup also waits
+for the unique user email index and the session expiry index.
 
 The `prestart` script builds `public/styles.css` with the locally installed Tailwind CLI before starting Express.
 
@@ -208,13 +227,93 @@ npm test
 
 These tests are in `_tests_/spacesService.test.js`. They use `jest.unstable_mockModule` before importing the service to replace the repository with mock functions. They check validation, defaults, capacity limits, successful creation, and repository errors. MongoDB does not need to be installed or running for this command.
 
-Run the separate Node schema and repository integration tests:
+Run the separate Node schema, repository, and authentication integration tests:
 
 ```sh
 npm run test:node
 ```
 
-The integration tests need a local `mongod` executable on `PATH`. If it is installed elsewhere, set `MONGOD_BINARY` to its full path. They start a temporary MongoDB instance on a free port, use a temporary data directory, and clean it up afterward. They do not use the application's `MONGODB_URI` or require a MongoDB server to be running beforehand. These tests check the same ID through create, list, find, update, and delete, as well as invalid IDs, partial updates, and protected fields.
+The integration tests need a local `mongod` executable on `PATH`. If it is installed elsewhere, set `MONGOD_BINARY` to its full path. They start a temporary MongoDB instance on a free port, use a temporary data directory, and clean it up afterward. They do not use the application's `MONGODB_URI` or require a MongoDB server to be running beforehand. These tests check the same ID through create, list, find, update, and delete, as well as invalid IDs, partial updates, and protected fields. Authentication tests also verify password hashing, signup role protection, admin provisioning, MongoDB sessions, login/logout, and the public health route.
+
+### Sprint 4: User accounts and authentication (Alex)
+
+The Mongoose model is registered as **`"User"`** in `models/User.js`. It stores
+required `name`, normalized unique `email`, a bcrypt `passwordHash`, and a `role`
+limited to `member` or `admin`, defaulting to `member`. It also records timestamps.
+`passwordHash` is excluded from ordinary reads and document serialization.
+
+`repositories/usersRepository.js` provides:
+
+| Method | Behavior |
+| --- | --- |
+| `createUser({ name, email, passwordHash })` | Saves a new member. Ignores supplied roles and all extra fields. |
+| `findById(id)` | Returns a plain user object or `null`; rejects malformed IDs. |
+| `findByEmail(email)` | Normalizes the email and returns a plain user object or `null`. |
+| `findByEmailForAuthentication(email)` | Includes the hash for server-side password comparison only. |
+| `createAdmin({ name, email, passwordHash })` | Trusted operator use only; inserts an admin and never upgrades an existing account. |
+
+The repository accepts an already generated hash. `services/authService.js`
+validates account input and hashes passwords with bcrypt at cost 12 before calling
+it. Passwords need at least 12 Unicode characters, cannot be entirely whitespace,
+and must fit within bcrypt's 72-byte UTF-8 limit. Passwords are not trimmed.
+Names are trimmed and limited to 100 characters; emails are trimmed, lowercased,
+and checked for basic address format. Duplicate emails return `409`.
+
+The JSON endpoints are:
+
+| Method and path | Body | Success |
+| --- | --- | --- |
+| `POST /auth/signup` | `{ "name": "...", "email": "...", "password": "..." }` | `201 { "user": { ... } }`; creates a member and starts their session. |
+| `POST /auth/login` | `{ "email": "...", "password": "..." }` | `200 { "user": { ... } }`; verifies credentials and starts a new session. |
+| `POST /auth/logout` | `{}` or no body (JSON header required) | `204`; destroys the session and clears its cookie. |
+| `GET /auth/me` | None | `200 { "user": { ... } }`, or `401` when logged out. |
+
+All POST requests must send `Content-Type: application/json`. Authentication
+writes reject a different `Origin` when one is supplied; these endpoints are
+intended for a frontend served from the same origin. Validation failures return
+`400`, wrong credentials return `401`, and errors use `{ "error": "..." }`.
+Responses never include passwords or password hashes. There are no signup/login
+pages in this change; the endpoints are ready for the team's frontend integration.
+
+After signup or login, the server regenerates and saves the session before sending
+the response. The agreed integration fields are:
+
+```js
+req.session.userId // String version of the authenticated User's MongoDB _id
+req.session.role   // "member" or "admin", read from the saved User
+```
+
+`express-session` uses `connect-mongo` and the existing MongoDB connection to
+store sessions in the `sessions` collection. The browser receives only a signed
+session ID in the `study-space.sid` cookie. Cookies are HTTP-only, use
+`SameSite=Lax`, expire after eight hours, and require HTTPS in production.
+MongoDB automatically removes expired session records through a TTL index.
+
+Session middleware is mounted before the `/spaces` routes so the team's
+`requireLogin` middleware and service authorization checks can use these fields.
+This change supplies authentication; applying access rules to study-space routes
+remains with that authorization work.
+
+#### Creating an admin securely
+
+From a trusted terminal on a machine with authorized database access, configure
+`MONGODB_URI` in your private `.env`, then run:
+
+```sh
+npm run create-admin
+```
+
+Enter the admin's name and email, then enter and confirm a password. Password input
+is hidden. The command hashes it using the same service as signup and inserts an
+admin account. An existing email is rejected without changing its role or password.
+The command accepts no arguments or piped input, so passwords do not need to appear
+in shell history or configuration files. Protect database credentials and access
+to the host that runs this command. There is no public admin-creation endpoint or
+default admin password. Creating an admin does not log in; use `/auth/login` next.
+
+Public signup always calls the member-only creation method. Supplying `role`,
+`userId`, `passwordHash`, or nested session fields in a request cannot grant admin
+access or replace the server-generated account identity.
 
 ## Sprint 3 Verification
 
