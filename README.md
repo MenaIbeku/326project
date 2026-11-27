@@ -139,7 +139,7 @@ I kept the databases separate into speacesRepository.js, with listSpaces() and c
 
 
 
-**Alexander Genov — Sprint 4:** I chose `express-session` with `connect-mongo` instead of JWT access tokens for the purpose that the 
+**Alexander Genov — Sprint 4:** I chose `express-session` with `connect-mongo` instead of JWT access tokens for the purpose that the
 sessions in MongoDb are kept across the case of a server restart and allows for the logout to invalidate a session by deletign. JWTs can avoid a session lookup but an immediate logout needs extra tracking or waiting for tokens to expaire. In this scenario, the database lookup allows for simpler session handling and sharing userID / role with the authorized code.
 
 
@@ -211,10 +211,7 @@ Use the port from `.env` if you changed `PORT`. The `/` route only displays the 
 - `models/Space.js`: defines the storage schema.
 - `repositories/spacesRepository.js`: reads, creates, updates, and deletes records.
 
-The schema requires `name`, `location`, and `noiseLevel` strings. It also stores
-`groupFriendly` (boolean, default `false`), `isAvailable` (boolean, default `true`),
-and optional `capacity` (number). MongoDB supplies `_id`; Mongoose supplies
-`createdAt` and `updatedAt`.
+The schema requires `name`, `location`, and `noiseLevel` strings, as well as an `owner` field that references the authenticated user's MongoDB ID. It also stores `groupFriendly` (boolean, default `false`), `isAvailable` (boolean, default `true`), and optional `capacity` (number). MongoDB supplies `_id`; Mongoose supplies `createdAt` and `updatedAt`.
 
 | Repository method | Result |
 |---|---|
@@ -224,7 +221,8 @@ and optional `capacity` (number). MongoDB supplies `_id`; Mongoose supplies
 | `updateById(id, changes)` | The updated plain object, or `null` if the record is missing. |
 | `removeById(id)` | The deleted plain object, or `null` if the record is missing. |
 
-Per-record methods accept MongoDB ObjectIds or their 24-character hexadecimal strings and reject malformed IDs. Updates allow only the editable schema fields and run schema validation. The service handles business-rule validation; the repository handles storage. The browser supports listing, creating, and viewing individual spaces. Update and delete are available at the repository layer.
+Per-record methods accept MongoDB ObjectIds or their 24-character hexadecimal strings and reject malformed IDs. Updates allow only the editable schema fields and run schema validation. The service handles business-rule validation; the repository handles storage. The browser supports listing, creating, and viewing individual spaces. Update and delete operations are available through the protected
+PATCH and DELETE `/spaces/:id` routes. Only the listing owner or an admin can perform these operations, as enforced by the service-layer authorization checks.
 
 The service calls the repository, for example:
 
@@ -237,6 +235,7 @@ const space = await spacesRepository.createSpace({
   location: "Main Library, second floor",
   noiseLevel: "quiet",
   groupFriendly: true,
+  owner: authenticatedUserId,
 });
 ```
 
@@ -248,7 +247,7 @@ Run the Jest service tests:
 npm test
 ```
 
-These tests are in `_tests_/spacesService.test.js`. They use `jest.unstable_mockModule` before importing the service to replace the repository with mock functions. They check validation, defaults, capacity limits, successful creation, and repository errors. MongoDB does not need to be installed or running for this command.
+These tests are in `_tests_/spacesService.test.js`. They use `jest.unstable_mockModule` before importing the service to replace the repository with mock functions. They check validation, defaults, capacity limits, successful creation, repository errors, authentication, ownership assignment, and authorization. They also verify that non-owners receive HTTP 403, owners and admins can update and delete listings, and users cannot change listing ownership.. MongoDB does not need to be installed or running for this command.
 
 Run the separate Node schema, repository, and authentication integration tests:
 
@@ -355,6 +354,24 @@ For the authentication checks run `node --test test/auth.test.js` with
 `mongod` These include hashed storage, member-only signup, duplicate
 accounts, invalid credentials, session persistence and logout, tampered-cookie
 rejection, browser form routes, and admin creation.
+
+### Sprint 4: Authorization and Ownership (Mena)
+
+Study-space listings are automatically assigned to the authenticated user who creates them. The `requireLogin` middleware protects POST, PATCH, and DELETE routes, while the service layer uses `isOwnerOrAdmin` to ensure that only listing owners or admins can update or delete listings.
+
+Unauthenticated requests to protected routes receive HTTP 401, while authenticated users without the necessary permissions receive HTTP 403.
+
+#### How to Test Authorization
+
+1. Sign up for two separate member accounts, User A and User B.
+2. Log in as User A and create a study-space listing.
+3. Record the MongoDB ID of the newly created listing from its detail page URL.
+4. Log in as User B and send a PATCH or DELETE request to `/spaces/:id` using User A's listing ID.
+5. Verify that both requests return HTTP 403 and that the listing remains unchanged.
+6. Log back in as User A and verify that updating the listing succeeds.
+7. Create an admin account using `npm run create-admin` and log in as the admin.
+8. Verify that the admin can update and delete User A's listing.
+9. Log out and verify that requests to protected routes return HTTP 401.
 
 ## Sprint 3 Verification
 
