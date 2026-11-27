@@ -16,8 +16,11 @@ document.body.addEventListener('htmx:beforeSwap', (event) => {
 
 form.addEventListener('htmx:afterRequest', (event) => {
   submitButton.removeAttribute('aria-disabled');
-  if (event.detail.xhr.status === 201) {
+  const { status } = event.detail.xhr;
+  if (status === 201) {
     form.reset();
+  } else if (status === 401) {
+    document.getElementById('form-error').textContent = 'Please log in to add a study space.';
   }
 });
 
